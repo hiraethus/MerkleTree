@@ -4,20 +4,28 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class HashTree {
-    private HashFunction hashFunction;
+    private final HashFunction hashFunction;
+    private final int numberOfBlocks;
 
-    public HashTree(HashFunction hashFunction) {
+    public HashTree(HashFunction hashFunction, int numberOfBlocks) {
         this.hashFunction = hashFunction;
+        this.numberOfBlocks = numberOfBlocks;
     }
 
     public HashNode build(List<String> sequence) {
-        List<Block> blocks = new ArrayList<>(sequence.size());
-        int count = 0;
-        for (String value: sequence) {
-            blocks.add(new Block(hashFunction, count++, value));
+        if (numberOfBlocks < sequence.size()) {
+            throw new RuntimeException("Sequence too long for number of blocks");
         }
 
-        return buildImpl(blocks);
+        Block[] blocks = new Block[numberOfBlocks];
+        Block emptyBlock = new Block(hashFunction, "");
+        Arrays.fill(blocks, emptyBlock);
+
+        for (int i = 0; i < sequence.size(); ++i) {
+            blocks[i] = new Block(hashFunction, sequence.get(i));
+        }
+
+        return buildImpl(Arrays.asList(blocks));
     }
 
     HashNode buildImpl(List<Block> values) {
@@ -40,9 +48,9 @@ public class HashTree {
     public static void main( String[] args ) {
         final HashFunction sha1Hash = new Sha1HashFunction();
 
-        List<String> values = Arrays.asList("one", "two", "three", "four", "five", "six", "seven", "eighty");
+        List<String> values = Arrays.asList("one", "two", "three", "four", "five", "six", "seven", "eight", "ninety");
 
-        HashTree tree = new HashTree(new Sha1HashFunction());
+        HashTree tree = new HashTree(new Sha1HashFunction(), (int)Math.pow(2,5));
         HashNode rootNode = tree.build(values);
 
         System.out.printf("The Root Hash is %s\n", rootNode.createHash());
