@@ -16,8 +16,3 @@
  * along with MerkleTree.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package com.clackjones.merkle;
-
-interface HashFunction {
-    String hashOf(String value);
-}
