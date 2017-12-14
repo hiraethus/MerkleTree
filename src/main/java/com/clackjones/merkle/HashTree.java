@@ -5,31 +5,43 @@ import java.util.stream.Collectors;
 
 public class HashTree {
     private final HashFunction hashFunction;
-    private final int numberOfBlocks;
+    private final int totalNumberOfBlocks;
 
-    public HashTree(HashFunction hashFunction, int numberOfBlocks) {
+    private int currentNumberOfBlocks;
+    private HashNode rootNode;
+    private List<Block> treeBlocks;
+
+    public HashTree(HashFunction hashFunction, int totalNumberOfBlocks) {
         this.hashFunction = hashFunction;
-        this.numberOfBlocks = numberOfBlocks;
+        this.totalNumberOfBlocks = totalNumberOfBlocks;
     }
 
-    public HashNode build(List<String> sequence) {
-        if (numberOfBlocks < sequence.size()) {
+    /**
+     * Initialize an empty tree
+     */
+    public void init() {
+        initWithValues(Collections.emptyList());
+    }
+
+    public void initWithValues(List<String> sequence) {
+        if (totalNumberOfBlocks < sequence.size()) {
             throw new RuntimeException("Sequence too long for number of blocks");
         }
 
-        Block[] blocks = new Block[numberOfBlocks];
+        currentNumberOfBlocks = sequence.size();
+
         Block emptyBlock = new Block(hashFunction, "");
-        Arrays.fill(blocks, emptyBlock);
+        List<Block> blocks = new ArrayList<>(Collections.nCopies(totalNumberOfBlocks, emptyBlock));
 
         for (int i = 0; i < sequence.size(); ++i) {
-            blocks[i] = new Block(hashFunction, sequence.get(i));
+            blocks.set(i, new Block(hashFunction, sequence.get(i)));
         }
 
-        return buildImpl(Arrays.asList(blocks));
+        initImpl(blocks);
     }
 
-    HashNode buildImpl(List<Block> values) {
-        // duplicate so can build tree
+    void initImpl(List<Block> values) {
+        treeBlocks = values;
         List<HashNode> treeNodes = values.stream()
                 .map(block -> new HashNode(hashFunction, block))
                 .collect(Collectors.toList());
@@ -42,17 +54,40 @@ public class HashTree {
             valueQueue.offer(parentNode);
         }
 
-        return valueQueue.poll();
+        rootNode = valueQueue.poll();
     }
 
-    public static void main( String[] args ) {
+    public HashNode getRootNode() {
+        return rootNode;
+    }
+
+    public int getNumberOfUsedBlocks() {
+        return currentNumberOfBlocks;
+    }
+
+    public List<Block> getTreeBlocks() {
+        return treeBlocks.subList(0, currentNumberOfBlocks);
+    }
+
+    public boolean isFull() {
+        return currentNumberOfBlocks == totalNumberOfBlocks;
+    }
+
+    public void addBlock(Block block) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public static void main(String[] args) {
         final HashFunction sha1Hash = new Sha1HashFunction();
 
         List<String> values = Arrays.asList("one", "two", "three", "four", "five", "six", "seven", "eight", "ninety");
 
-        HashTree tree = new HashTree(new Sha1HashFunction(), (int)Math.pow(2,5));
-        HashNode rootNode = tree.build(values);
+        HashTree tree = new HashTree(new Sha1HashFunction(), (int) Math.pow(2, 5));
+        tree.initWithValues(values);
 
-        System.out.printf("The Root Hash is %s\n", rootNode.createHash());
+        System.out.printf("The Root Hash is %s\n", tree.getRootNode().createHash());
+        System.out.printf("The tree is currently using %d blocks\n", tree.getNumberOfUsedBlocks());
+
+        tree.getTreeBlocks().stream().forEach(block -> System.out.println("'" + block.getValue() + "'"));
     }
 }
