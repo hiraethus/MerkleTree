@@ -6,23 +6,31 @@
   <artifactId>merkle-tree</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <build>
+    <sourceDirectory>src/main/gosu</sourceDirectory>
+    <testSourceDirectory>src/test/gosu</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <compilerId>gosuc</compilerId>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.gosu-lang.gosu</groupId>
+            <artifactId>gosu-maven-compiler</artifactId>
+            <version>${gosu.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
-  <packaging>jar</packaging>
 
   <name>merkle-tree</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/hiraethus/MerkleTree</url>
 
   <properties>
+    <gosu.version>1.14.7</gosu.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
